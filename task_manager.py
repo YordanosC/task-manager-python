@@ -1,6 +1,7 @@
 import json
 import os
 import argparse
+import csv
 
 FILE_NAME = "tasks.json"
 
@@ -39,6 +40,31 @@ def list_tasks(tasks):
     for tid, t in tasks.items():
         print(f"{tid:<5} {t['title']:<20} {t['priority']:<10} {t['deadline']:<12} {t['status']}")
 
+def export_to_csv(tasks):
+    if not tasks:
+        print("⚠️ No tasks to export.")
+        return
+
+    file_name = "tasks_report.csv"
+    
+    # Define the headers (the top row of your Excel sheet)
+    fieldnames = ["ID", "Title", "Priority", "Deadline", "Status"]
+
+    with open(file_name, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        
+        # Write the header row
+        writer.writeheader()
+        
+        # Write each task row
+        for task_id, details in tasks.items():
+            # We combine the ID and the details into one dictionary for the writer
+            row = {"ID": task_id}
+            row.update(details) 
+            writer.writerow(row)
+
+    print(f"📊 Export successful! Created '{file_name}'.")
+
 def main():
     tasks = load_tasks()
     parser = argparse.ArgumentParser(description="Pro Task Manager CLI")
@@ -59,6 +85,8 @@ def main():
         add_task(tasks, args.title, args.priority, args.deadline)
     elif args.command == "list":
         list_tasks(tasks)
+    elif args.command == "export":
+        export_to_csv(tasks)
     else:
         parser.print_help()
 
